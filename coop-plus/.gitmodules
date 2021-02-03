@@ -1,0 +1,3 @@
+[submodule "tools/clang"]
+    path = tools/clang
+    url = git@bitbucket.org:chaozhang04/coop-clang.git

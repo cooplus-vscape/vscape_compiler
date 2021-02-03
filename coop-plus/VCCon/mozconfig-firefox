@@ -1,0 +1,78 @@
+BRANCH="coop"
+
+#############################################
+##      Firefox Options
+#############################################
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/build-$BRANCH
+mk_add_options MOZ_MAKE_FLAGS=-j40
+
+ac_add_options --enable-application=browser
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-optimize
+#ac_add_options --enable-optimize
+ac_add_options --disable-tests
+ac_add_options --disable-rust
+
+# Keep symbols to symbolize ASan traces later
+#export MOZ_DEBUG_SYMBOLS=1
+#ac_add_options --enable-debug-symbols
+#ac_add_options --disable-install-strip
+
+# Settings for a debug+opt build
+#ac_add_options --enable-optimize
+#ac_add_options --enable-debug
+
+# disable WebM video format, which requires yasm tool
+#ac_add_options --disable-webm
+#ac_add_options --disable-libjpeg-turbo
+## diable gstreamer
+#ac_add_options --disable-gstreamer
+#ac_add_options --disable-ogg 
+
+
+#############################################
+##      VTrust Options
+#############################################
+LLVM_HOME="/home/chao/git-repo/coop"
+LLVM_HOME_OBJ="/home/chao/git-repo/coop/COOP++/build-$BRANCH"
+
+
+############################################################################
+###########################  Extra Compiling Options #######################
+############################################################################
+
+# option -g will take much more memory
+# option -fPIC is required, because Firefox will halt when linking libxul.so with ld.gold
+# http://squirrel-lang.org/forums/default.aspx?g=posts&m=5766
+EXTRA_FLAGS="-v -Wno-error=unused-command-line-argument -Xclang -fdump-verbose -fPIC"
+# -march=x86-64"
+#EXTRA_CXXFLAGS="-stdlib=libc++"
+# -std=c++11"
+
+############################################################################
+###########################  LLVM Compile Options ##########################
+############################################################################
+#
+## NOTE:
+#   clang/clang++ is a driver program, it may have different kinds of input/output. Be careful with the compiling options.
+#
+#   Output: preprocessed code (-E), asm (-S), obj (-c), exe (else)
+#   Tips: Do NOT put -flto into the CC/CXX, but into CFLAGS/CXXFLAGS. Otherwise, it will create LLVM IR instead of asm, when compiling with -S
+#
+#   Input: src (.c), src (.cpp), obj (.o), 
+#   Tips 1: Do specify the options in LDFLAGS (especially -flto). Otherwise, it fails to work, because sometimes the compiler will work on obj directly.
+#   Tips 2: Do NOT set some flags in both LDFLAGS and CFLAGS/CXXFLAGS. For some LTO options, we can set them at most once. 
+
+# set CC/CXX based on LLVM_HOME
+export CC="$LLVM_HOME_OBJ/bin/clang"
+export CXX="$LLVM_HOME_OBJ/bin/clang++"
+export RANLIB="/bin/true"
+
+# compiler option -flto equals to -emit-llvm, will generate LLVM format outputs (object files or assembly files)
+export CFLAGS="$EXTRA_FLAGS" 
+export CXXFLAGS="$EXTRA_CXXFLAGS"
+# linker option -flto 
+#export LDFLAGS="-march=native"
+
+
